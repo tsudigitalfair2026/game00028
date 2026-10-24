@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🐧 ペンギンさがし</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+touch-action:none;
+font-family:sans-serif;
+user-select:none;
+
+background:
+radial-gradient(circle at 20% 20%, rgba(255,255,255,.9) 0 3%, transparent 4%),
+radial-gradient(circle at 80% 15%, rgba(255,255,255,.8) 0 2%, transparent 3%),
+radial-gradient(circle at 30% 75%, rgba(255,255,255,.7) 0 2%, transparent 3%),
+radial-gradient(circle at 75% 80%, rgba(255,255,255,.8) 0 3%, transparent 4%),
+linear-gradient(
+180deg,
+#5fd9ff 0%,
+#8cecff 20%,
+#c9f8ff 45%,
+#eaffff 65%,
+#dff7ff 75%,
+#f7ffff 100%
+);
+
+position:relative;
+}
+
+body::before{
+content:"";
+position:absolute;
+left:0;
+right:0;
+bottom:0;
+height:38%;
+pointer-events:none;
+background:#e9ffff;
+opacity:.95;
+clip-path:polygon(
+0% 100%,
+0% 70%,
+8% 60%,
+16% 72%,
+24% 55%,
+34% 76%,
+45% 50%,
+56% 78%,
+67% 52%,
+77% 68%,
+87% 48%,
+100% 72%,
+100% 100%
+);
+}
+
+body::after{
+content:"";
+position:absolute;
+left:0;
+right:0;
+bottom:0;
+height:20%;
+pointer-events:none;
+background:
+repeating-linear-gradient(
+90deg,
+rgba(255,255,255,.95) 0 25px,
+rgba(200,245,255,.95) 25px 50px
+);
+clip-path:polygon(
+0 100%,
+0 35%,
+10% 50%,
+20% 40%,
+30% 60%,
+40% 45%,
+50% 65%,
+60% 42%,
+70% 60%,
+80% 35%,
+90% 55%,
+100% 40%,
+100% 100%
+);
+}
+
+.screen{
+display:none;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+width:100%;
+height:100vh;
+padding:15px;
+text-align:center;
+position:relative;
+z-index:2;
+}
+
+.active{
+display:flex;
+}
+
+h1{
+font-size:38px;
+color:#005a8d;
+margin-bottom:10px;
+text-shadow:2px 2px 4px rgba(255,255,255,.8);
+}
+
+h2{
+color:#005a8d;
+margin-bottom:15px;
+}
+
+button{
+width:220px;
+height:60px;
+font-size:22px;
+font-weight:bold;
+border:none;
+border-radius:18px;
+background:linear-gradient(#1ec8ff,#0095ff);
+color:white;
+margin-top:15px;
+box-shadow:0 4px 10px rgba(0,0,0,.25);
+}
+
+.info{
+max-width:450px;
+font-size:19px;
+line-height:1.8;
+background:rgba(255,255,255,.85);
+padding:15px;
+border-radius:16px;
+backdrop-filter:blur(4px);
+}
+
+.iceworld{
+font-size:60px;
+margin-bottom:10px;
+}
+
+.topbar{
+width:100%;
+max-width:500px;
+display:flex;
+justify-content:space-between;
+font-size:26px;
+font-weight:bold;
+color:#005a8d;
+margin-bottom:10px;
+}
+
+#guide{
+font-size:20px;
+font-weight:bold;
+color:#005a8d;
+background:rgba(255,255,255,.7);
+padding:10px;
+border-radius:12px;
+margin-bottom:10px;
+}
+
+#gameArea{
+width:min(95vw,420px);
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+}
+
+.card{
+aspect-ratio:1/1;
+background:rgba(255,255,255,.95);
+border-radius:18px;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:46px;
+cursor:pointer;
+box-shadow:0 3px 8px rgba(0,0,0,.2);
+transition:.15s;
+}
+
+.card:active{
+transform:scale(.92);
+}
+
+.target{
+background:#fff6bf;
+border:4px solid gold;
+}
+
+#finalScore{
+font-size:52px;
+font-weight:bold;
+color:#ff9800;
+margin:10px 0;
+}
+
+.rank{
+font-size:42px;
+font-weight:bold;
+color:#e65100;
+}
+
+.snow{
+position:absolute;
+font-size:28px;
+opacity:.35;
+pointer-events:none;
+animation:float 6s ease-in-out infinite;
+}
+
+@keyframes float{
+0%,100%{transform:translateY(0);}
+50%{transform:translateY(12px);}
+}
+
+.s1{top:5%;left:8%;}
+.s2{top:12%;right:10%;}
+.s3{top:28%;left:15%;}
+.s4{bottom:22%;right:12%;}
+.s5{bottom:12%;left:12%;}
+.s6{top:45%;right:5%;}
+</style>
+</head>
+
+<body>
+
+<div class="snow s1">❄️</div>
+<div class="snow s2">🧊</div>
+<div class="snow s3">❄️</div>
+<div class="snow s4">🧊</div>
+<div class="snow s5">❄️</div>
+<div class="snow s6">❄️</div>
+
+<!-- スタート画面 -->
+<div id="startScreen" class="screen active">
+
+<div class="iceworld">
+🧊🏔️❄️🐧❄️🏔️🧊
+</div>
+
+<h1>ペンギンさがし</h1>
+
+<div class="info">
+<b>あそびかた</b><br><br>
+たくさんのペンギンの中から<br>
+⭐が付いたペンギンをタップしよう！<br><br>
+
+正解すると1点ゲット！<br>
+まちがえると1点へるよ！<br><br>
+
+60秒でどこまで点数をのばせるかな？
+</div>
+
+<button id="startBtn">スタート</button>
+
+</div>
+
+<!-- ゲーム画面 -->
+<div id="gameScreen" class="screen">
+
+<div class="topbar">
+<div>🏆 <span id="score">0</span></div>
+<div>⏰ <span id="time">60</span></div>
+</div>
+
+<div id="guide">
+❄️ 氷の世界で迷子のペンギンを見つけよう！ ❄️
+</div>
+
+<div id="gameArea"></div>
+
+</div>
+
+<!-- 結果画面 -->
+<div id="resultScreen" class="screen">
+
+<h2>🐧 ゲーム終了！</h2>
+
+<div>最終スコア</div>
+<div id="finalScore">0</div>
+
+<div>評価ランク</div>
+<div id="rank" class="rank">C</div>
+
+<button id="restartBtn">もう一度遊ぶ</button>
+
+</div>
+
+<script>
+const startScreen=document.getElementById("startScreen");
+const gameScreen=document.getElementById("gameScreen");
+const resultScreen=document.getElementById("resultScreen");
+
+const scoreEl=document.getElementById("score");
+const timeEl=document.getElementById("time");
+const finalScore=document.getElementById("finalScore");
+const rankEl=document.getElementById("rank");
+const gameArea=document.getElementById("gameArea");
+
+let score=0;
+let time=60;
+let timer=null;
+let targetIndex=0;
+
+function show(screen){
+[startScreen,gameScreen,resultScreen].forEach(s=>{
+s.classList.remove("active");
+});
+screen.classList.add("active");
+}
+
+function createRound(){
+
+gameArea.innerHTML="";
+
+targetIndex=Math.floor(Math.random()*16);
+
+for(let i=0;i<16;i++){
+
+const card=document.createElement("div");
+card.className="card";
+
+if(i===targetIndex){
+
+card.textContent="🐧⭐";
+card.classList.add("target");
+
+card.addEventListener("click",()=>{
+score++;
+scoreEl.textContent=score;
+createRound();
+});
+
+}else{
+
+card.textContent="🐧";
+
+card.addEventListener("click",()=>{
+if(score>0){
+score--;
+}
+scoreEl.textContent=score;
+});
+
+}
+
+gameArea.appendChild(card);
+}
+}
+
+function startGame(){
+
+score=0;
+time=60;
+
+scoreEl.textContent=0;
+timeEl.textContent=60;
+
+createRound();
+
+show(gameScreen);
+
+clearInterval(timer);
+
+timer=setInterval(()=>{
+
+time--;
+timeEl.textContent=time;
+
+if(time<=0){
+clearInterval(timer);
+endGame();
+}
+
+},1000);
+}
+
+function getRank(score){
+
+if(score>=50) return "S";
+if(score>=35) return "A";
+if(score>=20) return "B";
+return "C";
+
+}
+
+function endGame(){
+
+finalScore.textContent=score;
+rankEl.textContent=getRank(score);
+
+show(resultScreen);
+
+}
+
+document.getElementById("startBtn").addEventListener("click",startGame);
+document.getElementById("restartBtn").addEventListener("click",startGame);
+</script>
+
+</body>
+</html>
